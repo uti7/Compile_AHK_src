@@ -2135,16 +2135,21 @@ _Change_Icons()
 	
 	Loop , %Icon_Count%
 	{
+; FIXME: 2020-03-20 in newer version, could not get IconGroupID of all.
 		If Icon_%A_Index%_Set
 		{
 			; ResHacker uses ResourceIds instead of IconIndex
 			IconGroupID := ResourceIdOfIcon(Bin_File , A_Index - 1)
+OutputDebug, % "ADD: IconGroupID: " IconGroupID
 			s_Script := s_Script . "-addoverwrite """ . Icon_%A_Index% """ , ICONGROUP," . IconGroupID . ",1033`n"
 		} Else If Icon_%A_Index%_Delete
 		{
 			; ResHacker uses ResourceIds instead of IconIndex
 			IconGroupID := ResourceIdOfIcon(Bin_File , A_Index - 1)
-			s_Script := s_Script . "-delete ICONGROUP," . IconGroupID . ",1033`n"
+OutputDebug, % "DEL: IconGroupID: " IconGroupID
+      If(IconGroupID){
+        s_Script := s_Script . "-delete ICONGROUP," . IconGroupID . ",1033`n"
+      }
 		}
 	}
 
@@ -2154,6 +2159,7 @@ _Change_Icons()
 	s_CMD := """" . A_ScriptDir . "\" Res_Exe . """"
 			. " -script "
 			. """" . s_Sc_File . """"
+OutputDebug, % "s_CMD: " s_CMD
 	
 	FileAppend , `n* Replace icons:`n%s_CMD%`n, %A_WorkingDir%\%Log_File%
 	RunWait , %s_CMD% , , UseErrorLevel Hide
@@ -2161,12 +2167,14 @@ _Change_Icons()
 	{
 		FileRead , s_Log , %A_WorkingDir%\%Res_Log%
 		s_ERR := "Couldn't change icons , " . Res_Exe . " failed!`n" . s_Log
+OutputDebug, % "s_ERR(1): " s_ERR
 		_Error_Exit(Error_Message . s_ERR)
 	}
 	FileRead , s_Log , %A_WorkingDir%\%Res_Log%
 	IfInString , s_Log , ERROR:
 	{
 		s_ERR := "Couldn't change icons , " . Res_Exe . " failed!`n" . s_Log
+OutputDebug, % "s_ERR(2): " s_ERR
 		_Error_Exit(Error_Message . s_ERR)
 	}
 	FileDelete , %A_WorkingDir%\%Res_Log%
